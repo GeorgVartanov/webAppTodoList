@@ -1,4 +1,4 @@
-package sqlPostgresDB
+package sqlPgDB
 
 import (
 	"fmt"
@@ -34,6 +34,8 @@ func (s *PostgresDB) connect(dbPath string) error {
 	if err = db.Ping(); err != nil {
 		return err
 	}
+	db.SetMaxOpenConns(50)
+
 	s.DB = db
 	return nil
 }
