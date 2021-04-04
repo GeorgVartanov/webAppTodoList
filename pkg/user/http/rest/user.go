@@ -2,7 +2,7 @@ package rest
 
 import (
 	"errors"
-	"github.com/GeorgVartanov/myWebApp/pkg/user/service/create"
+	"github.com/GeorgVartanov/myWebApp/pkg/user/service/adding"
 	"github.com/GeorgVartanov/myWebApp/utils"
 	"log"
 	"strings"
@@ -26,13 +26,16 @@ type User struct {
 	Email         string    `json:"email"`
 	Password      string    `json:"password"`
 	PasswordCheck string    `json:"passwordCheck"`
-	Created       time.Time `json:"created"`
-	Changed       time.Time `json:"changed"`
-	IsAdmin       bool      `json:"isAdmin"`
 }
 
-func (u *User) ConvertToServiceUser() (*create.User, error) {
+func (u *User) ConvertToDeletingServiceUser()  {
 
+}
+
+
+
+
+func (u *User) ConvertToAddingServiceUser() (*adding.User, error) {
 	hash, err := utils.HashGenerateFromPassword(&u.Password)
 	if err != nil {
 		return nil, err
@@ -41,7 +44,16 @@ func (u *User) ConvertToServiceUser() (*create.User, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &create.User{
+	if err := u.ValidateEmail(); err != nil {
+		return nil,err
+	}
+	if err := u.ValidatePassword(); err != nil {
+		return nil,err
+	}
+	u.ValidateDisplayName()
+
+
+	return &adding.User{
 		UserName:  u.UserName,
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
@@ -53,18 +65,7 @@ func (u *User) ConvertToServiceUser() (*create.User, error) {
 	}, err
 }
 
-//ValidateFields All User fields
-func (u *User) ValidateFields() error {
-	if err := u.ValidateEmail(); err != nil {
-		return err
-	}
-	if err := u.ValidatePassword(); err != nil {
-		return err
-	}
-	u.ValidateDisplayName()
 
-	return nil
-}
 
 func (u *User) ValidateEmail() error {
 	if u.Email == "" {

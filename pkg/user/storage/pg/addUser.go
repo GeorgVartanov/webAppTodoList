@@ -1,10 +1,10 @@
 package pg
 
 import (
-	"github.com/GeorgVartanov/myWebApp/pkg/user/service/create"
+	"github.com/GeorgVartanov/myWebApp/pkg/user/service/adding"
 )
 
-func (c *UserStorage) Create(u *create.User) error {
+func (c *UserStorage) AddUser(u *adding.User) error {
 	stmt, err := c.db.Preparex(u.GetQuery())
 	if err != nil {
 		return err

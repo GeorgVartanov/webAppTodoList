@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/GeorgVartanov/myWebApp/pkg/user/http/rest"
-	"github.com/GeorgVartanov/myWebApp/pkg/user/storage/pg"
-	"time"
-
 	"github.com/BurntSushi/toml"
 	"github.com/GeorgVartanov/myWebApp/config"
 	"github.com/GeorgVartanov/myWebApp/pkg/database/sqlPgDB"
+	"github.com/GeorgVartanov/myWebApp/pkg/user/http/rest"
+	"github.com/GeorgVartanov/myWebApp/pkg/user/service/adding"
+	"github.com/GeorgVartanov/myWebApp/pkg/user/storage/pg"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -20,29 +20,15 @@ func main() {
 
 	pDB := sqlPgDB.NewPostgresDB(config.DBPostgres)
 	defer pDB.Close()
-
-	newuser := rest.User{
-		UserName:      "Zozo1",
-		FirstName:     "Zozo1",
-		LastName:      "zozo1",
-		Email:         "zozo@",
-		Password:      "zozozozo",
-		PasswordCheck: "zozozozo",
-		Created:       time.Now(),
-		Changed:       time.Now(),
-		IsAdmin:       false,
-	}
-	err := newuser.ValidateFields()
-	if err != nil {
-		fmt.Println(err)
-	}
-	userService, err := newuser.ConvertToServiceUser()
-
 	UserStorage := pg.NewUserStorage(pDB)
-	err = UserStorage.Create(userService)
-	if err != nil {
-		fmt.Println(err)
-	}
+	adser := adding.NewService(UserStorage)
+
+	r := gin.Default()
+	api := r.Group("/api/user")
+
+	rest.Handler(api, adser)
+	r.Run(":3000")
+
 }
 
 //migrate -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable -path pkg/database/sqlPgDB/migrations up
